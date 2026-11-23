@@ -1,0 +1,404 @@
+# Research task: prove or disprove the exact continued-fraction depth limit for decimal truncations of the golden ratio
+
+Act as a mathematical researcher and Lean 4 proof developer. Attempt to determine the exact asymptotic constant below by a rigorous proof. Use Lean throughout the investigation to check definitions, reductions, and proposed arguments.
+
+The proposed constant is a conjecture, not a premise. Be willing to prove it, disprove it, establish another limit, or prove nonconvergence. Treat the supplied derivation as a proof sketch requiring independent verification. Do not treat an earlier LLM's confidence as mathematical evidence.
+
+The goal is substantive progress on the deterministic asymptotic theorem. A compiling project skeleton, a numerical fit, or a theorem that assumes the missing statistical law does not complete the task.
+
+## 1. Fix the exact problem
+
+All logarithms below are natural logarithms. For integers n >= 1, define
+
+    phi = (1 + sqrt(5)) / 2
+    Q_n = 10^n
+    A_n = floor(phi * Q_n)
+    T_n = A_n / Q_n.
+
+This is truncation without rounding, with n digits AFTER the decimal point.
+
+Define Euclidean depth on natural numbers by
+
+    E(a, 0) = 0
+    E(a, b) = 1 + E(b, a mod b), when b > 0.
+
+Set L_n = E(A_n, Q_n). This counts every coefficient, including a_0, in the complete canonical finite regular continued fraction of T_n. For a noninteger rational, the last coefficient must be at least 2.
+
+The target is the unconditional pointwise limit
+
+    lim_{n -> infinity} L_n / n = C,
+
+where
+
+    C = log(10) / (2 * log(phi))
+        + 6 * log(2) * log(10) / pi^2
+
+      = 3.362756097782866911419350895398379288939... .
+
+The decimal approximation is diagnostic only. The target constant must be defined by the exact expression involving Real.sqrt, Real.log, and Real.pi.
+
+This task concerns this limit for phi. The original question about a global maximizer over all real numbers is outside the present scope.
+
+A schematic Lean target is
+
+    Filter.Tendsto
+      (fun n : ℕ => (depth n : ℝ) / (n : ℝ))
+      Filter.atTop
+      (nhds proposedConstant)
+
+with the agreed meanings of depth and proposedConstant. Adapt syntax to the actual pinned toolchain; this schematic statement is not a claim that a supplied Lean file has compiled.
+
+Cast to real numbers BEFORE division. Handle n = 0 explicitly; its value does not affect the limit. Do not substitute a subsequential limit, limsup, Cesàro mean, almost-everywhere result, or density-one result for the requested limit.
+
+## 2. Establish a trustworthy specification and executable arithmetic
+
+Create a small specification module containing the definitions and the target proposition. Review and record that specification before attempting the main proof. Subsequent semantic changes must be documented and justified by proved equivalences.
+
+Use well-founded recursion on the second Euclidean argument to implement E. Prove termination using a mod b < b for b > 0. Prove the correspondence with canonical finite continued-fraction length; numerical agreement alone is insufficient.
+
+An exact computable implementation of the truncation numerator is
+
+    Ahat_n = (Q_n + isqrt(5 * Q_n^2)) div 2,
+
+where isqrt is integer square root and div is natural-number division.
+
+Prove Ahat_n = floor(phi * Q_n). If convenient, use Ahat_n in executable definitions and a separate real-floor definition in the mathematical specification, with a proved bridge.
+
+Prove the basic positivity, gcd, scaling, and canonical-termination facts needed downstream. Verify that common-factor cancellation does not change E. Avoid silently changing the coefficient-counting convention.
+
+Use ordinary integer or real subtraction for expressions that may be negative, particularly u^2 - u*v - v^2. Natural-number subtraction is truncated and would change the mathematics.
+
+## 3. Inspect the actual Lean environment
+
+Use an existing suitable project if provided; otherwise create an isolated Lean 4 project with a compatible, pinned mathlib dependency. Record the Lean version, mathlib commit, and dependency lockfile. Preserve unrelated user work.
+
+Inspect actual declarations in the local checkout before relying on names or signatures. Use rg and existing search tools to look for theorems and mathematically equivalent formulations.
+
+Relevant documented areas include:
+
+- Mathlib.Algebra.ContinuedFractions.Computation.Basic
+- Mathlib.Algebra.ContinuedFractions.Computation.CorrectnessTerminating
+- Mathlib.Algebra.ContinuedFractions.Computation.TerminatesIffRat
+- Mathlib.Algebra.ContinuedFractions.Computation.Translations
+- natural-number gcd, modulo, integer square root, Fibonacci numbers;
+- real logarithms, asymptotic estimates, filters, limits, and finite sums.
+
+The Euclidean definition is intended to avoid unnecessary dependence on the full generalized-continued-fraction API. Reuse useful infrastructure, but prove the semantic bridge.
+
+Audit the availability of Ridout's theorem, relevant Diophantine approximation results, and any statistical results you intend to invoke. An unsuccessful name search does not establish that a theorem is absent. A theorem in a paper is not automatically a theorem available in Lean.
+
+Keep mathematical validity and formalization availability as separate questions.
+
+## 4. Audit and formalize the finite decomposition
+
+For n >= 1, let
+
+    delta_n = phi * Q_n - A_n
+    d_n = gcd(A_n, Q_n).
+
+Prove 0 < delta_n < 1.
+
+Starting from (A_n, Q_n), strip the maximal initial run of Euclidean quotients equal to 1. Let k_n be the number stripped, including the integer-part coefficient, and let (u_n, v_n) be the remaining pair. Prove
+
+    u_n >= 2 * v_n > 0.
+
+Define
+
+    U_n = u_n / d_n
+    V_n = v_n / d_n
+    tau_n = E(U_n, V_n).
+
+The divisions here are exact natural-number divisions. Prove that they are exact, that U_n and V_n are coprime, and that
+
+    L_n = k_n + tau_n.
+
+The following identities are proposed starting lemmas to verify:
+
+1. With F(u,v) = u^2 - u*v - v^2,
+
+       F(v, u-v) = -F(u,v).
+
+2. Initially,
+
+       F(A_n, Q_n) = -delta_n * (sqrt(5) * Q_n - delta_n).
+
+3. At the end of the initial run,
+
+       F(u_n, v_n) = delta_n * (sqrt(5) * Q_n - delta_n).
+
+   Justify the sign, including the relevant parity of k_n.
+
+4. With Fibonacci numbers F_0 = 0 and F_1 = 1,
+
+       Q_n = F_{k_n} * u_n + F_{k_n-1} * v_n.
+
+5. Since u_n >= 2*v_n,
+
+       u_n^2 / 4 <= u_n^2 - u_n*v_n - v_n^2 < u_n^2.
+
+Use explicit real coercions where required. These imply, with constants independent of n,
+
+    u_n ≍ sqrt(Q_n * delta_n),
+
+    k_n = log(Q_n / delta_n) / (2*log(phi)) + O(1),
+
+    log(U_n) = (1/2)*log(Q_n)
+               + (1/2)*log(delta_n)
+               - log(d_n) + O(1).
+
+You may formalize uniform bounded-error inequalities instead of big-O notation. Specify the range of n and prove all positivity conditions needed for logarithms and division.
+
+U_n is the larger residual integer, hence the residual height. Do not assert that V_n has the same asymptotic size without proving it.
+
+## 5. Separate the established Diophantine input from the new obstacle
+
+The relevant consequence of Ridout's theorem is:
+
+For an algebraic irrational alpha, a fixed finite set S of primes, and epsilon > 0, sufficiently large reduced rationals p/q whose denominators have all prime factors in S satisfy
+
+    |alpha - p/q| >= q^(-1-epsilon).
+
+Verify the exact hypotheses and formulation against a primary or author-hosted mathematical source.
+
+Apply it with alpha = phi, S = {2,5}, and the reduced fraction
+
+    (A_n/d_n) / (Q_n/d_n).
+
+First justify that the reduced denominators tend to infinity. The intended deduction is
+
+    delta_n >= d_n^(1+epsilon) * Q_n^(-epsilon)
+
+eventually, for each epsilon > 0. Then establish
+
+    -log(delta_n) / n -> 0,
+    log(d_n) / n -> 0.
+
+Together with the finite decomposition, these give
+
+    k_n / n -> A,       A = log(10)/(2*log(phi)),
+    log(U_n) / n -> B,  B = log(10)/2.
+
+Do not assume decimal normality or statistical randomness to prove these scale statements.
+
+If the required Ridout instance is unavailable in the pinned libraries, initially formalize the reduction with -log(delta_n)/n -> 0 and log(d_n)/n -> 0 as EXPLICIT hypotheses. Record the published argument separately.
+
+Do not insert Ridout or its consequence as a project axiom and later claim an unconditional formal proof. Equally, do not spend the entire investigation formalizing a very general version of Ridout while leaving the genuinely new tail problem untouched. Develop the minimal conditional interface, investigate the central obstacle in parallel, and return to discharge every dependency required for a complete formal result.
+
+## 6. The central unresolved theorem
+
+Let
+
+    c_E = 12*log(2)/pi^2
+    beta_G = pi^2/(12*log(2)).
+
+Using the scale results, prove the precise equivalence between the target and
+
+    tau_n / log(U_n) -> c_E.                 [TailLaw]
+
+This is a result about one particular deterministic sequence (U_n,V_n). It is not a random-input theorem.
+
+The factor log(10)/2 in the residual height gives
+
+    c_E * log(10)/2 = 6*log(2)*log(10)/pi^2,
+
+which explains the proposed contribution of Lochs's constant.
+
+Also consider this equivalent formulation. For each n, let the reduced Euclidean remainders be
+
+    r_{n,0}=U_n, r_{n,1}=V_n, ...,
+    r_{n,tau_n}=1, r_{n,tau_n+1}=0.
+
+Prove the telescoping identity
+
+    log(U_n)
+      = sum_{j=1}^{tau_n} -log(r_{n,j}/r_{n,j-1}).
+
+Then the missing theorem is equivalently
+
+    (1/tau_n) * sum_{j=1}^{tau_n}
+      -log(r_{n,j}/r_{n,j-1})
+      -> beta_G.                            [TailMeanLaw]
+
+The Gauss-measure mean of -log(x) is
+
+    integral_0^1 [-log(x)/(log(2)*(1+x))] dx
+      = pi^2/(12*log(2)).
+
+That integral identifies the candidate mean; it does not establish that this deterministic family satisfies it.
+
+Formalizing Target iff TailLaw is useful infrastructure. The mathematical task remains to establish or refute TailLaw, or to find another route that settles the original target.
+
+## 7. Investigate concrete proof routes
+
+After the initial definitions and dependency audit, devote substantial research effort to the missing deterministic statement. A different simpler approach is welcome. Do not treat the suggested routes as mandatory machinery.
+
+For each route attempted, state a concrete intermediate lemma, explain why it would help, attempt its proof, and record the precise outcome.
+
+### Route A: exploit the arithmetic of the actual residual pairs
+
+Use the quadratic-form identity, Fibonacci reconstruction, coprimality, and the restriction Q_n = 2^n*5^n.
+
+Investigate modular-inverse or reversed-continued-fraction descriptions. Ask whether an atypically short or long tail forces a Diophantine approximation or divisibility pattern that can be excluded.
+
+Derive useful exact recurrences where possible. For example,
+
+    A_{n+1} = 10*A_n + e_{n+1},
+    delta_{n+1} = 10*delta_n - e_{n+1},
+
+where e_{n+1} is the next decimal digit in {0,...,9}. Determine what, if anything, this implies for residual pairs. Do not presume independence or mixing of these digits.
+
+### Route B: deterministic avoidance of statistical exceptional sets
+
+Examine fixed-denominator concentration theorems for finite continued fractions. Identify the exact additional proposition needed to show that V_n/U_n avoids their exceptional sets.
+
+Counting a small exceptional proportion is insufficient. Any successful application must prove why this particular selected numerator belongs to the appropriate good set, with the quantifiers needed for a full limit.
+
+### Route C: finite-orbit dynamics
+
+Try to establish TailMeanLaw for these exact finite Gauss-map or Euclidean trajectories.
+
+If invoking equidistribution, identify the starting points, time window, measure, and observable, and verify every hypothesis. Because -log(x) is unbounded near zero, prove the required integrability or tail control in addition to any weak convergence of empirical measures.
+
+Results about the whole continued-fraction period of 10^n*phi may average exponentially many coefficients. Our relevant segment has only O(n) coefficients. Prove any required short-segment control; whole-period equidistribution alone does not supply it.
+
+### Route D: actively seek a refutation
+
+Investigate mechanisms producing infinitely many n for which the normalized depth stays a fixed positive distance from C. Test whether long structured tail blocks, exceptionally large partial quotients, or arithmetic constraints create such subsequences.
+
+A valid disproof can have the form
+
+    exists epsilon > 0, for every N,
+    exists n >= max(N,1):
+      |L_n/n - C| >= epsilon.
+
+Alternatively, prove a different limit C' together with an exact proof C' != C, or prove nonconvergence. Numerical discrepancies at finitely many n are not a disproof.
+
+## 8. Inference errors to guard against
+
+Explicitly check every proposed argument for these failures:
+
+- Replacing a claim about phi by an almost-everywhere claim about real numbers.
+- Applying a random-numerator theorem to the selected numerator V_n without a proved bridge.
+- Replacing a prescribed short segment by a whole-period average.
+- Replacing pointwise convergence with density-one or averaged convergence.
+- Treating frequencies of a few small partial quotients as a proof of TailMeanLaw.
+- Using arbitrary good rational approximants instead of the exact decimal truncations.
+- Ignoring cancellation by d_n or an unusually small delta_n.
+- Confusing the actual all-ones prefix with the prefix certified by both endpoints of a decimal interval.
+- Assuming that decimal normality is equivalent to this conjecture.
+- Turning a conjecture into an implicit, instance, or section-generated hypothesis.
+- Proving a claim about a modified sequence or a different continued-fraction convention without a bridge to the specification.
+
+An obstruction to one approach does not prove the conjecture false. Failure to find a theorem in mathlib does not prove the mathematical problem is open.
+
+## 9. Use computation to guide research, not replace proof
+
+Use exact integers for truncation and Euclidean depth. Floating point may be used only for clearly labelled diagnostics.
+
+Previously computed reference values, to verify independently where useful, are:
+
+    n          k_n        tau_n        L_n
+    10         25         9            34
+    100        239        93           332
+    1,000      2,395      951          3,346
+    10,000     23,925     9,706        33,631
+    100,000    239,249    96,806       336,055
+    1,000,000  2,392,487  970,986      3,363,473
+
+Small regression checks should catch indexing and normalization errors. Reproducing the million-digit computation is not a prerequisite for proof research.
+
+Run larger experiments only to distinguish explicit hypotheses, identify a possible counterexample mechanism, or test a newly derived finite identity. For every expensive experiment, state what mathematical decision its result could change. A further decimal fit to C is not a proof strategy.
+
+## 10. Organize work so the central problem stays visible
+
+Maintain a concise STATUS document with separate categories:
+
+1. Kernel-checked unconditional theorems.
+2. Kernel-checked conditional theorems, with all hypotheses displayed.
+3. Published mathematical inputs whose required instances are not yet formalized.
+4. New informal proof attempts and their unresolved steps.
+5. Numerical observations.
+
+Record failed approaches and exact obstructions so later sessions do not repeat them. Save the current strongest theorem and next precise goal at checkpoints.
+
+A reasonable module organization is Definitions, Euclid, Split, Scale, Tail, Main, and Audit; adapt it to the actual project. Keep the verified build separate from clearly marked exploratory drafts. Do not import unfinished draft proofs into a deliverable described as verified.
+
+If parallel agents are available, separate arithmetic/formalization work, deterministic-tail research, and skeptical review. Share exact statements and hypotheses, not just conclusions. Integrate only checked results, and ensure the final reviewer examines the actual specification and dependency chain.
+
+Work autonomously within the authorized environment. Do not stop after proposing a plan, creating scaffolding, or restating the known conditional reduction. Continue through substantive attempts at the central mathematical obstacle, subject to actual resource limits.
+
+## 11. Requirements for a successful formal proof or refutation
+
+A full formal success requires all of the following:
+
+1. The final theorem proves the originally fixed target, or its genuine mathematical negation, with no unresolved assumptions.
+
+2. The definitions provably describe the exact decimal truncations and canonical CF depth. Inspect the statement's definitions and notation for semantic drift.
+
+3. The exact deliverable builds under its recorded Lean/mathlib versions from reproducible source.
+
+4. Inspect both the fully elaborated final theorem type and its transitive axiom dependencies. Use #print and #print axioms, with fully qualified names and sufficient printing detail.
+
+5. Check the final proof against the independently fixed target in a fresh audit module with no research hypotheses in scope. For a proof, the audit should be able to supply the final theorem directly as a term of the fixed Target proposition. Do the analogous check for a refutation.
+
+6. The final proof's axiom dependencies must be contained in the standard set propext, Classical.choice, and Quot.sound. Reject sorryAx, custom axioms, compiler-trust axioms, and any other additional trust extension.
+
+7. Do not rely on a brittle blacklist of axiom names. Native proof evaluation has different axiom names across Lean versions. native_decide, decide +native, or similar paths must not introduce extra axioms into the final dependency chain. Ordinary tactics that construct kernel-checked proof terms are welcome. External computations and #eval are exploratory unless their results are independently certified in the accepted proof.
+
+8. Do not modify the kernel, imported theorem meanings, statement notation, toolchain internals, or checking behavior to obtain acceptance. Do not silence errors or conceal warnings about incomplete proofs.
+
+9. If compatible independent or supplementary proof checkers are available, inspect their actual documentation and use them appropriately. State exactly which checks ran. Do not claim an external-kernel check that was not executed.
+
+An axiom audit alone is insufficient: a theorem can have only standard axioms while still assuming TailLaw as a parameter. Check its complete type and its compatibility with the fixed unconditional target.
+
+Temporary holes in isolated research drafts are not final proofs. A cited paper is not a Lean proof term. An explicit conditional theorem is legitimate progress and must remain labelled conditional.
+
+## 12. Deliver the strongest honest result
+
+The deliverable should contain:
+
+- Reproducible source and pinned dependencies.
+- A readable mathematical account explaining the crucial argument and every external dependency.
+- Build results and the final statement/axiom audit for every claim described as fully verified.
+- A clear verdict: proved, disproved, conventional proof proposal with formalization incomplete, or not settled.
+- If not settled: the strongest verified results, an exact minimal remaining lemma, the concrete routes attempted, why each failed or remains incomplete, and the most promising next step.
+
+If you obtain a complete conventional argument using precisely identified published results before full formalization is feasible, preserve it and identify every remaining formalization obligation. Do not describe it as a fully Lean-verified theorem.
+
+If the task remains unresolved after substantial work, say so directly. Do not claim either success or mathematical impossibility merely because the project compiles, time ran out, or no further proof idea was found.
+
+## 13. Starting references
+
+Read the exact theorem statements and hypotheses before applying them. These are starting points, not assertions that they settle the target.
+
+- C. Faivre, On calculating a continued fraction expansion from a decimal expansion:
+  https://www.acta.hu/download.phtml?id=2622
+  Relevant to decimal precision and CF prefixes; its statistic differs from the full finite depth studied here.
+
+- Yann Bugeaud, Expansions of algebraic numbers, particularly Theorem 6.6:
+  https://irma.math.unistra.fr/~bugeaud/travaux/FFNT.pdf
+  Contains the relevant Ridout theorem statement.
+
+- Viviane Baladi and Brigitte Vallee, Euclidean algorithms are Gaussian:
+  https://arxiv.org/abs/cs/0307062
+  Statistical laws over rational input ensembles.
+
+- Ofir David, Taehyeong Kim, Ron Mor, and Uri Shapira, On the rate of convergence of continued fraction statistics of random rationals:
+  https://arxiv.org/abs/2401.15586
+  Examine Theorem 1.2 and its random-numerator hypothesis.
+
+- Menny Aka and Uri Shapira, On the evolution of continued fractions in a fixed quadratic field:
+  https://arxiv.org/abs/1201.1280
+  Check carefully the distinction between full-period statistics and the prescribed finite tail needed here.
+
+- Lean documentation, Validating a Lean Proof:
+  https://lean-lang.org/doc/reference/latest/ValidatingProofs/
+
+- Lean documentation, Axioms:
+  https://lean-lang.org/doc/reference/latest/Axioms/
+
+- Mathlib continued-fraction computation documentation:
+  https://leanprover-community.github.io/mathlib4_docs/Mathlib/Algebra/ContinuedFractions/Computation/TerminatesIffRat.html
+
+Begin by inspecting the environment, fixing the exact specification, compiling the Euclidean-depth foundation, and auditing the first decomposition lemmas. Then pursue the deterministic tail law as the main research objective.
+
