@@ -1,1 +1,3 @@
-import GoldiLochs.Basic
+module
+
+public import GoldiLochs.Basic
