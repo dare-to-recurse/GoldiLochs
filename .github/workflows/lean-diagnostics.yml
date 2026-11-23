@@ -1,0 +1,35 @@
+name: Lean CI
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  lean-diagnostics:
+    name: Lean diagnostics
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Lean and download mathlib artifacts
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: 'false'
+          build: 'false'
+          test: 'false'
+          lint: 'false'
+          use-github-cache: 'false'
+          use-mathlib-cache: 'true'
+      - name: Build without Lean diagnostics
+        run: |
+          # Fail on a missing mathlib artifact before Lake can rebuild it.
+          lake --no-build build @mathlib/Mathlib:elabArts
+          # Warnings and Lean informational diagnostics (including hints) fail the build.
+          lake --iofail build
