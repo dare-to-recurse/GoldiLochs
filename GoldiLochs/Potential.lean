@@ -103,10 +103,104 @@ theorem goldenStepCost_quotient_bounds {a b : ℕ} (hba : b ≤ a) (hb : 0 < b) 
     (add_le_add_right (div_le_div_of_nonneg_left he hd hdhi) 1),
     Real.log_le_log (by positivity) (add_le_add_right (div_le_div_of_nonneg_left he hp hdlo) 1)⟩
 
+theorem goldenStepCost_log_digit {a b : ℕ} (hba : b ≤ a) (hb : 0 < b) :
+    Real.log ((a / b : ℕ) : ℝ) - 2 * Real.log phi ≤ goldenStepCost a b ∧
+      goldenStepCost a b ≤ Real.log ((a / b : ℕ) : ℝ) := by
+  let q : ℝ := (a / b : ℕ)
+  have hq : 1 ≤ q := by
+    change (1 : ℝ) ≤ ((a / b : ℕ) : ℝ)
+    exact_mod_cast (show 1 ≤ a / b from Nat.div_pos hba hb)
+  have hp := zero_lt_one.trans one_lt_phi
+  have hs : 0 < phi ^ 2 := pow_pos hp _
+  have hl : q / phi ^ 2 ≤ 1 + (q - 1) / phi ^ 2 := by
+    apply (div_le_iff₀ hs).2
+    rw [add_mul, one_mul, div_mul_cancel₀ _ hs.ne']
+    linarith [one_le_pow₀ (n := 2) one_lt_phi.le]
+  have hl' := Real.log_le_log (div_pos (zero_lt_one.trans_le hq) hs) hl
+  rw [Real.log_div (zero_lt_one.trans_le hq).ne' hs.ne', Real.log_pow] at hl'
+  norm_num at hl'
+  have hu : 1 + (q - 1) / phi ≤ q := by
+    have he := div_le_div_of_nonneg_left (sub_nonneg.mpr hq) zero_lt_one one_lt_phi.le
+    rw [div_one] at he
+    linarith
+  have hu' := Real.log_le_log (by positivity : 0 < 1 + (q - 1) / phi) hu
+  obtain ⟨lo, hi⟩ := goldenStepCost_quotient_bounds hba hb
+  exact ⟨(sub_le_iff_le_add.mpr hl').trans lo, hi.trans hu'⟩
+
 /-- Total excess logarithmic growth along a finite Euclidean orbit. -/
 noncomputable def euclidGoldenCost (a b : ℕ) : ℝ :=
   ∑ i ∈ Finset.range (euclidDepth a b),
     goldenStepCost (euclidRemainder a b i) (euclidRemainder a b (i + 1))
+
+/-- The large quotients of a finite orbit, indexed by the remainder pair they divide. -/
+def euclidStepsAbove (a b cutoff : ℕ) : Finset ℕ :=
+  (Finset.range (euclidDepth a b)).filter
+    (fun i => cutoff < euclidRemainder a b i / euclidRemainder a b (i + 1))
+
+/-- The sum of the logarithms of the quotients above a cutoff. -/
+noncomputable def euclidLargeDigitMass (a b cutoff : ℕ) : ℝ :=
+  ∑ i ∈ euclidStepsAbove a b cutoff,
+    Real.log ((euclidRemainder a b i / euclidRemainder a b (i + 1) : ℕ) : ℝ)
+
+/-- The excess cost contributed by the same selected steps. -/
+noncomputable def euclidLargeDigitCost (a b cutoff : ℕ) : ℝ :=
+  ∑ i ∈ euclidStepsAbove a b cutoff,
+    goldenStepCost (euclidRemainder a b i) (euclidRemainder a b (i + 1))
+
+/-- Large-quotient logarithmic mass and the portion of the golden cost it carries
+are comparable uniformly in the input and cutoff. -/
+theorem euclid_large_digit_cost_bounds {a b cutoff : ℕ} (ha : 0 < a) (hab : b ≤ a)
+    (hcut : phi ^ 4 ≤ (cutoff : ℝ)) :
+    euclidLargeDigitMass a b cutoff / 2 ≤ euclidLargeDigitCost a b cutoff ∧
+      euclidLargeDigitCost a b cutoff ≤ euclidLargeDigitMass a b cutoff := by
+  have hstep (i : ℕ) (hi : i ∈ euclidStepsAbove a b cutoff) :
+      let left := euclidRemainder a b i
+      let right := euclidRemainder a b (i + 1)
+      Real.log ((left / right : ℕ) : ℝ) / 2 ≤ goldenStepCost left right ∧
+        goldenStepCost left right ≤ Real.log ((left / right : ℕ) : ℝ) := by
+    obtain ⟨ht, hc⟩ := Finset.mem_filter.mp hi
+    have hb := (euclidRemainder_pos_iff ha b (i + 1)).mpr (Finset.mem_range.mp ht)
+    have hineq := goldenStepCost_log_digit (euclidRemainder_succ_le hab i) hb
+    have hq : phi ^ 4 ≤ ((euclidRemainder a b i / euclidRemainder a b (i + 1) : ℕ) : ℝ) :=
+      hcut.trans (by exact_mod_cast hc.le)
+    have hl := Real.log_le_log (pow_pos (zero_lt_one.trans one_lt_phi) _) hq
+    rw [Real.log_pow] at hl
+    norm_num at hl
+    exact ⟨by linarith [hineq.1], hineq.2⟩
+  unfold euclidLargeDigitMass euclidLargeDigitCost
+  constructor
+  · rw [Finset.sum_div]
+    exact Finset.sum_le_sum (fun i hi => (hstep i hi).1)
+  · exact Finset.sum_le_sum (fun i hi => (hstep i hi).2)
+
+/-- A large-digit contribution is small per decimal place when increasing the cutoff
+makes it eventually at most any prescribed positive error. -/
+def ResidualCutoffVanishes (mass : ℕ → ℕ → ℕ → ℝ) : Prop :=
+  ∀ ε : ℝ, 0 < ε → ∃ cutoff : ℕ, phi ^ 4 ≤ (cutoff : ℝ) ∧
+    ∀ᶠ n : ℕ in atTop, mass (residualU n) (residualV n) cutoff / (n : ℝ) ≤ ε
+
+theorem residual_large_cost_vanishes_iff_log_mass :
+    ResidualCutoffVanishes euclidLargeDigitCost ↔
+      ResidualCutoffVanishes euclidLargeDigitMass := by
+  have hcompare {n cutoff : ℕ} (hn : 1 ≤ n) (hcut : phi ^ 4 ≤ (cutoff : ℝ)) :=
+    euclid_large_digit_cost_bounds
+      (a := residualU n) (b := residualV n)
+      (by have := residual_twice_le hn; have := residualV_pos hn; omega)
+      (by have := residual_twice_le hn; omega) hcut
+  constructor
+  · intro h ε hε
+    obtain ⟨cutoff, hcut, hev⟩ := h (ε / 2) (by positivity)
+    refine ⟨cutoff, hcut, ?_⟩
+    filter_upwards [hev, eventually_ge_atTop 1] with n he hn
+    have hn' : 0 < (n : ℝ) := by exact_mod_cast (show 0 < n by omega)
+    have he' := (div_le_iff₀ hn').mp he
+    apply (div_le_iff₀ hn').mpr
+    linarith [(hcompare hn hcut).1, he']
+  · intro h ε hε
+    obtain ⟨cutoff, hcut, hev⟩ := h ε hε
+    refine ⟨cutoff, hcut, ?_⟩
+    filter_upwards [hev, eventually_ge_atTop 1] with n he hn
+    exact (div_le_div_of_nonneg_right (hcompare hn hcut).2 (Nat.cast_nonneg n)).trans he
 
 private theorem euclidGoldenCost_step (a : ℕ) {b : ℕ} (hb : 0 < b) :
     euclidGoldenCost a b = goldenStepCost a b + euclidGoldenCost b (a % b) := by

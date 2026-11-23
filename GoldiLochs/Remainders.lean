@@ -31,6 +31,17 @@ theorem euclidRemainder_step (a : ℕ) {b : ℕ} (hb : 0 < b) (i : ℕ) :
   · simp [hb]
   · simp [euclidRemainder_step a (Nat.pos_of_ne_zero hb) 0]
 
+theorem euclidRemainder_succ_le {a b : ℕ} (hab : b ≤ a) (i : ℕ) :
+    euclidRemainder a b (i + 1) ≤ euclidRemainder a b i := by
+  induction i generalizing a b with
+  | zero => simpa using hab
+  | succ i ih =>
+    by_cases hb : b = 0
+    · simp [hb]
+    · have hb' := Nat.pos_of_ne_zero hb
+      rw [euclidRemainder_step a hb', euclidRemainder_step a hb']
+      exact ih (Nat.mod_lt a hb').le
+
 /-- For a positive initial numerator, the remainders are positive through the last division
 and zero thereafter. -/
 theorem euclidRemainder_pos_iff {a : ℕ} (ha : 0 < a) (b i : ℕ) :

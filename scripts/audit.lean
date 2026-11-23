@@ -24,6 +24,8 @@ set_option pp.all true in
 #print GoldiLochs.target_iff_tailMeanLaw_of_approximation_bound
 set_option pp.all true in
 #print GoldiLochs.target_iff_decimalGoldenCost
+set_option pp.all true in
+#print GoldiLochs.eventually_log_tail_quotient_le_quarter
 
 #print axioms GoldiLochs.Target
 #print axioms GoldiLochs.euclidDepth_zero
@@ -63,9 +65,19 @@ set_option pp.all true in
 #print axioms GoldiLochs.residualPenultimatePair_spec
 #print axioms GoldiLochs.residualPenultimatePair_proper
 #print axioms GoldiLochs.residualLastEuclideanQuotient_weighted_error_le
+#print axioms GoldiLochs.euclidDigits_length
+#print axioms GoldiLochs.residualDigits_getElem?_eq_stream
+#print axioms GoldiLochs.tail_digit_continuant_bound
+#print axioms GoldiLochs.euclidDigits_reverse_numerator
+#print axioms GoldiLochs.residual_digit_approximation_left
+#print axioms GoldiLochs.residual_digit_approximation_right
+#print axioms GoldiLochs.eventually_log_tail_quotient_le_quarter
 #print axioms GoldiLochs.goldenHeight_step
 #print axioms GoldiLochs.goldenStepCost_eq_zero
 #print axioms GoldiLochs.goldenStepCost_quotient_bounds
+#print axioms GoldiLochs.goldenStepCost_log_digit
+#print axioms GoldiLochs.euclid_large_digit_cost_bounds
+#print axioms GoldiLochs.residual_large_cost_vanishes_iff_log_mass
 #print axioms GoldiLochs.euclidGoldenCost_identity
 #print axioms GoldiLochs.decimalGoldenCost_nonneg
 #print axioms GoldiLochs.decimalGoldenCost_identity

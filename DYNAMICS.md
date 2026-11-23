@@ -126,3 +126,35 @@ for every fixed \(\xi>0\). Thus \(F(\phi)=t\) and \(s-t=O(q^{-7/8})\), which con
 The \(U_n^{-2}\) comparison and the logarithmic scales now give \(|b/U_n-t|>Q_n^{-\epsilon}\) eventually for every \(\epsilon>0\). With \(t=0\), this implies \(\log a_{\rm last}/\log Q_n\to0\), since \(a_{\rm last}b\le U_n\). For an eventually periodic reverse center, every positive linear number of repetitions of a fixed pattern would give exponential proximity. Such a terminal block therefore has \(o(n)\) digits for each fixed terminal word and fixed repeated pattern. This does not control large quotients deep inside the trajectory.
 
 The weak-statistics example with a transcendental suffix given above is compatible with both endpoint exclusions. Its large interior quotient still prevents the target length rate.
+
+## Subexponential digits can carry a positive fraction of the cost
+
+There is a comparison with weak Gauss statistics, approximation bounds in both directions, and even a subexponential maximum digit. Choose a transcendental Gauss-generic \(y=[0;a_1,a_2,\ldots]\) with \(a_1\ge2\), with \(a_j\le Cj^2\) for a fixed \(C\), and with \(\log P_m/m\to\beta_G=\pi^2/(12\log 2)\), where \(P_m\) is its \(m\)-th convergent denominator. The digit bound holds almost everywhere by the Gauss tail estimate and Borel–Cantelli. The countably many algebraic points have measure zero, and \(a_1\ge2\) describes a positive-measure set.
+
+For a fixed \(\kappa>0\), form a palindrome by putting \(h=\lfloor\sqrt m\rfloor\) copies of \(B=\lfloor\exp(\kappa m/h)\rfloor\) between the word \((a_1,\ldots,a_m)\) and its reverse. Write \(z_m\) for the rational with initial zero and this list of quotients. Both expansions are canonical since \(a_1\ge2\). The middle continuant lies between \(B^h\) and \((B+1)^h\). A concatenated continuant lies between the product of the two component continuants and twice that product, by multiplying the digit matrices. Hence
+\[
+\log U_m=(2\beta_G+\kappa)m+o(m), \qquad
+\tau_m=2m+h.
+\]
+In particular, \(\tau_m/\log U_m\to 2/(2\beta_G+\kappa)\), while the maximum of the logarithms of all digits is \(O(\sqrt m)=o(\log U_m)\). To match the decimal sequence's logarithmic height scale, index the comparison by \(m=\lfloor n\log(10)/(2(2\beta_G+\kappa))\rfloor\). Since both endpoint ratios tend to \(y\), both avoid every fixed algebraic center at any exponential precision.
+
+The comparison also obeys the stronger bound \(q^3|z_m-p/q|\gg 1\) for every distinct reduced rational \(p/q\), uniformly in \(m,p,q\). Indeed, every next digit is at most a fixed multiple of the preceding denominator. Before the inserted block this follows from \(a_j=O(j^2)\) and Fibonacci denominator growth. For the block and the final reversed word the preceding denominator is at least \(P_m\), which dominates \(B\) and \(Cm^2\). Apply Legendre's theorem and the convergent error bound as above. Both directions have the same digit list, so the bound also holds in reverse. In particular it implies the forward fourth-power bound and the localized reverse separation in [Reverse moving centers](REVERSE_MOVING.md).
+
+The empirical Gauss measures still converge weakly. To see why the reversed block has the same cylinder frequencies, write a finite word's digit-matrix product in the form \(\left(\begin{smallmatrix}q&q'\\p&p'\end{smallmatrix}\right)\). Its cylinder endpoints are \(p/q\) and \((p+p')/(q+q')\). The quotient of their \(1+x\) values is
+\[
+\frac{q(q+p+q'+p')}{(q+q')(q+p)}.
+\]
+Reversal transposes the matrix, swapping \(p\) with \(q'\) and preserving this quotient. Therefore a word and its reversal have the same Gauss measure. For each fixed word length \(J\), the central block and the joins affect at most \(h+2J\) starting positions, which is \(o(m)\). The two long words have Gauss frequencies by genericity and the reversal identity. These cylinder frequencies give weak convergence by bounded approximation on cylinders, using that the largest diameter at depth \(J\) is at most \(F_{J+1}^{-2}\).
+
+The inserted \(o(m)\) digits nevertheless contribute \(\kappa m+o(m)\) to the logarithmic cost, since a digit \(B\) has \(-\log x=\log(B+T x)=\log B+O(B^{-1})\). Thus weak Gauss convergence and even a subexponential maximum digit leave open how much logarithmic cost accumulates in the interior. The missing uniform estimate concerns the sum over all large digits, rather than a bound for each digit in isolation.
+
+## The cutoff estimate needed with weak convergence
+
+Let \(a_{n,j}\) be the actual residual quotients. Under the logarithmic height scale and weak convergence of the empirical Gauss measures to the Gauss measure, the tail law is equivalent to
+\[
+\lim_{M\to\infty}\limsup_{n\to\infty}
+  \frac1n\sum_{j:\,a_{n,j}>M}\log a_{n,j}=0.
+\]
+For this implication in both directions, cap \(-\log x\) at \(\log(M+1)\) and extend the capped function continuously at zero. Its Gauss mean tends to \(\beta_G\) by monotone convergence. At a step of digit \(a\), the excess above the cap is zero for \(a\le M\), is at most \(2\log a\) for \(a>M\ge1\), and is at least \((1/2)\log a\) for \(a>(M+1)^2\). These bounds use \(a\le x^{-1}<a+1\).
+
+The total logarithmic sum divided by \(n\) tends to \(\log(10)/2\). Also \(\tau_n/n\) is bounded, since every step grows the positive golden-ratio linear form by at least \(\phi\) in reverse, and the initial residual value of that form is at most \(\phi U_n\). For fixed \(M\), weak convergence therefore replaces the capped sum divided by \(n\) by the capped mean times \(\tau_n/n\), with error tending to zero. Letting \(M\) grow proves the desired rate if the displayed cutoff estimate holds. Conversely, the rate together with weak convergence makes the normalized excess above the cap tend to a constant proportional to the difference between \(\beta_G\) and the capped mean. The lower comparison at cutoff \((M+1)^2\) then gives the displayed estimate. Lean verifies the corresponding equivalence between small cutoff log mass and small cutoff golden cost in [Potential](GoldiLochs/Potential.lean).
