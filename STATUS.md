@@ -12,6 +12,8 @@
 - [Gauss](GoldiLochs/Gauss.lean) identifies the finite Euclidean remainder ratios with actual iterates of the Gauss map starting at $V_n/U_n$. The sum of their negative logarithms through the last positive remainder is $\log U_n$.
 - [Exceptional](GoldiLochs/Exceptional.lean) proves that the original truncations' normalized length after removing the integer part is eventually above $12\log(2)/\pi^2$ by a fixed positive margin.
 - [Arithmetic](GoldiLochs/Arithmetic.lean) proves that the reduced denominator $q_n$ divides $Q_n$ and satisfies $3q_n^2>Q_n$, so $q_n\to\infty$. Fibonacci reconstruction and Cassini's identity give $F_{k_n}A_n=v_n+F_{k_n+1}Q_n$. The phase bounds imply $0<v_n<6F_{k_n}$, so $v_n$ is among at most six lifts of one residue class.
+- [Potential](GoldiLochs/Potential.lean) proves that the nonnegative logarithmic cost of a Euclidean step vanishes at quotient one. The sum of this cost over the reduced tail, plus $\log d_n$, is exactly $\log(\sqrt 5\,Q_n-\delta_n)-L_n\log\phi$. The fixed target is equivalent, without Diophantine hypotheses, to that total cost divided by $n$ tending to $\log 10-C\log\phi$.
+- [Backward](GoldiLochs/Backward.lean) verifies the determinant and exact error of the penultimate convergent of $V_n/U_n$. It bounds the cube of the final quotient times the fourth-power-weighted error by $U_n^2$. [Phase](GoldiLochs/Phase.lean) reduces the moving-center linear form exactly to $\sqrt5\,\phi^{-k_n}(p u_n-q v_n)$.
 
 ## Kernel-checked conditional results
 
@@ -32,13 +34,13 @@ Bugeaud's Theorem 6.6 gives only finitely many exceptional pairs of nonzero inte
 
 ## Deterministic tail research
 
-[RESEARCH.md](RESEARCH.md) gives a conventional number-field Subspace Theorem argument for the exact residual ratio. For each $0<\epsilon\le1$, eventually every reduced rational center of denominator at most $Q_n^{\epsilon/24}$ is farther than $Q_n^{-\epsilon}$ from that ratio. The phase identity used by the argument is checked in Lean. The Subspace Theorem application remains unformalized. Together with the Ridout scale this argument implies that the tail depth tends to infinity and that each fixed-index tail quotient is subexponential in $n$.
+[Moving centers](MOVING_CENTERS.md) strengthens the earlier [six-coordinate argument](RESEARCH.md). The four-coordinate Subspace Theorem proof gives $q^4|V_n/U_n-p/q|>Q_n^{-\epsilon}$ eventually for each $\epsilon>0$, simultaneously for every distinct reduced rational center in $[0,1]$. Consequently every proper convergent satisfies $q_{j+1}<Q_n^\epsilon q_j^3$. Under Ridout's height scale the largest quotient is at most $Q_n^{1/3+o(1)}$. The argument also excludes initial repetitions of any fixed periodic word for a positive linear number of digits. A separate $S$-unit argument in the same note excludes bounded multiplicative order of $Q_n$ modulo the part of $F_{k_n}$ coprime to $10$. These Diophantine applications remain conventional proofs.
 
-The explicit comparison family in [RESEARCH.md](RESEARCH.md) satisfies the same height and proximity bounds and has two different subsequential normalized depths. The exact missing lemma for the GoldiLochs pairs is that for each $\epsilon>0$, eventually every $n$ satisfies
+The comparison family in [Moving centers](MOVING_CENTERS.md) satisfies the strengthened height and approximation bounds and has two different subsequential normalized depths. The exact missing lemma for the GoldiLochs pairs is that for each $\epsilon>0$, eventually every $n$ satisfies
 ```math
 \left|\frac{\tau_n}{\log U_n}-\frac{12\log 2}{\pi^2}\right|<\epsilon.
 ```
-A Gauss-map approach would need control over the full finite orbit at the logarithmic height scale, including the contribution from small ratios at indices whose preceding convergent denominators already have exponential size.
+[Dynamics](DYNAMICS.md) gives an equivalent bounded-observable problem on each exact geodesic segment. The conventional reverse-center argument also excludes exponential proximity to each fixed algebraic center after reversal. With the height scale, the actual last quotient is therefore subexponential and fixed periodic terminal blocks have sublinear length. A comparison family with weak Gauss convergence and both endpoint exclusions still has a normalized depth equal to half the candidate rate, due to one large interior quotient. A discrete Gauss-map proof needs control over the contribution from small ratios reached inside the trajectory.
 
 The six-lift description gives an arithmetic formulation. To use it for the limit requires information about the Euclidean trajectories after choosing the lift of $-F_{k_n+1}10^n\bmod F_{k_n}$ selected by the decimal truncation. The congruence and lift bound leave open how often that trajectory has an atypical normalized length.
 
@@ -67,4 +69,4 @@ lake env leanchecker --verbose GoldiLochs
 
 The build passed without Lean compiler diagnostics. The standalone audit checks an independently spelled version of the fixed proposition, prints its fully elaborated definition and the complete conditional theorem type, and reports transitive dependencies for the results above. Their dependencies are contained in `propext`, `Classical.choice`, and `Quot.sound`. The bundled `leanchecker` replayed the project modules using Lean's kernel.
 
-Nanoda 0.4.31 type-checked the exports of `target_iff_tailMeanLaw_of_log_scales`, `original_length_eventually_exceptional`, and `residualPhase_eq` and their dependencies with the same three axioms permitted. It reported no type-checking errors and one separate pretty-printing error for axioms. The locally installed `lean4lean` binary rejected the object-file format as incompatible.
+Nanoda 0.4.31 type-checked separate exports of the earlier reduction and of this checkpoint's `target_iff_decimalGoldenCost`, `movingCenter_error_identity`, and `residualLastEuclideanQuotient_weighted_error_le` with the same three axioms permitted. It reported no type-checking errors and one separate pretty-printing error for axioms on each export. The locally installed `lean4lean` binary rejected the object-file format as incompatible.

@@ -9,11 +9,11 @@ import Mathlib.Tactic
 
 namespace GoldiLochs
 
-theorem decimalSplit_phase {n : ℕ} (hn : 1 ≤ n) :
+theorem decimalSplit_linear_forms {n : ℕ} (hn : 1 ≤ n) :
     let s := decimalSplit n
-    delta n * phi ^ (2 * s.count) * ((s.u : ℝ) + (phi - 1) * (s.v : ℝ)) =
-      ((s.u : ℝ) - phi * (s.v : ℝ)) *
-        (Real.sqrt 5 * (decimalDenominator n : ℝ) - delta n) := by
+    phi ^ s.count * ((s.u : ℝ) + (phi - 1) * (s.v : ℝ)) =
+        Real.sqrt 5 * (decimalDenominator n : ℝ) - delta n ∧
+      (s.u : ℝ) - phi * (s.v : ℝ) = phi ^ s.count * delta n := by
   let s := decimalSplit n
   let q : ℝ := decimalDenominator n
   have hsqrt : 2 * phi - 1 = Real.sqrt 5 := by unfold phi; ring
@@ -36,10 +36,44 @@ theorem decimalSplit_phase {n : ℕ} (hn : 1 ≤ n) :
       ring
     rw [hminus, heq, (decimalSplit_odd hn).neg_pow]
     ring
-  change delta n * phi ^ (2 * s.count) * ((s.u : ℝ) + (phi - 1) * (s.v : ℝ)) =
-    ((s.u : ℝ) - phi * (s.v : ℝ)) * (Real.sqrt 5 * q - delta n)
-  rw [hminus', ← hplus', two_mul, pow_add]
+  exact ⟨hplus', hminus'⟩
+
+theorem decimalSplit_phase {n : ℕ} (hn : 1 ≤ n) :
+    let s := decimalSplit n
+    delta n * phi ^ (2 * s.count) * ((s.u : ℝ) + (phi - 1) * (s.v : ℝ)) =
+      ((s.u : ℝ) - phi * (s.v : ℝ)) *
+        (Real.sqrt 5 * (decimalDenominator n : ℝ) - delta n) := by
+  obtain ⟨hplus, hminus⟩ := decimalSplit_linear_forms hn
+  dsimp only
+  rw [hminus, ← hplus, two_mul, pow_add]
   ring
+
+/-- The moving-center linear form collapses exactly to the determinant against
+the residual pair. Multiplying by the positive power of `phi` clears the normalization. -/
+theorem movingCenter_error_identity {n : ℕ} (hn : 1 ≤ n) (p q : ℝ) :
+    let s := decimalSplit n
+    let w := (phi ^ (2 * s.count))⁻¹
+    let h := Real.sqrt 5 * (decimalDenominator n : ℝ) - delta n
+    ((q + (phi - 1) * p) * delta n - (q - phi * p) * w * h) * phi ^ s.count =
+      Real.sqrt 5 * (p * (s.u : ℝ) - q * (s.v : ℝ)) := by
+  let s := decimalSplit n
+  let h := Real.sqrt 5 * (decimalDenominator n : ℝ) - delta n
+  let f := phi ^ s.count
+  have hf : f ≠ 0 := (pow_pos (by linarith [phi_gt_three_halves]) _).ne'
+  obtain ⟨hplus, hminus⟩ := decimalSplit_linear_forms hn
+  change f * ((s.u : ℝ) + (phi - 1) * (s.v : ℝ)) = h at hplus
+  change (s.u : ℝ) - phi * (s.v : ℝ) = f * delta n at hminus
+  have hw : phi ^ (2 * s.count) = f * f := by rw [two_mul, pow_add]
+  have hphi : Real.sqrt 5 = 2 * phi - 1 := by unfold phi; ring
+  change ((q + (phi - 1) * p) * delta n - (q - phi * p) * (phi ^ (2 * s.count))⁻¹ * h) *
+    f = _
+  calc
+    _ = (q + (phi - 1) * p) * (f * delta n) - (q - phi * p) * (h / f) := by
+      rw [hw]
+      field_simp
+    _ = _ := by
+      rw [← hminus, ← hplus, mul_div_cancel_left₀ _ hf, hphi]
+      ring
 
 /-- Ratio of the two linear forms at the end of the initial run of ones. -/
 noncomputable def residualPhase (n : ℕ) : ℝ :=

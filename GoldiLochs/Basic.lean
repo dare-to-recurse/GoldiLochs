@@ -6,9 +6,11 @@ Authors: Daniel Karlsson
 module
 
 public import GoldiLochs.Arithmetic
+public import GoldiLochs.Backward
 public import GoldiLochs.Exceptional
 public import GoldiLochs.Gauss
 public import GoldiLochs.Phase
+public import GoldiLochs.Potential
 public import GoldiLochs.Scale
 public import GoldiLochs.Tail
 
