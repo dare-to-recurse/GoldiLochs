@@ -14,6 +14,8 @@
 - [Arithmetic](GoldiLochs/Arithmetic.lean) proves that the reduced denominator $q_n$ divides $Q_n$ and satisfies $3q_n^2>Q_n$, so $q_n\to\infty$. Fibonacci reconstruction and Cassini's identity give $F_{k_n}A_n=v_n+F_{k_n+1}Q_n$. The phase bounds imply $0<v_n<6F_{k_n}$, so $v_n$ is among at most six lifts of one residue class.
 - [Potential](GoldiLochs/Potential.lean) proves that the nonnegative logarithmic cost of a Euclidean step vanishes at quotient one. The sum of this cost over the reduced tail, plus $\log d_n$, is exactly $\log(\sqrt 5\,Q_n-\delta_n)-L_n\log\phi$. The fixed target is equivalent, without Diophantine hypotheses, to that total cost divided by $n$ tending to $\log 10-C\log\phi$.
 - [Backward](GoldiLochs/Backward.lean) verifies the determinant and exact error of the penultimate convergent of $V_n/U_n$. It bounds the cube of the final quotient times the fourth-power-weighted error by $U_n^2$. [Phase](GoldiLochs/Phase.lean) reduces the moving-center linear form exactly to $\sqrt5\,\phi^{-k_n}(p u_n-q v_n)$.
+- [Continuants](GoldiLochs/Continuants.lean) identifies each digit of the actual residual list with mathlib's canonical continued-fraction stream after the integer part. For every digit $a$ with preceding continuant denominators $D_L$ and $D_R$ from the two ends, it proves $aD_LD_R\le U_n$ and gives reduced, distinct approximants with errors at most $1/(aD_L^2)$ and $1/(aD_R^2)$.
+- [Potential](GoldiLochs/Potential.lean) compares the golden cost and the logarithmic digit mass above a cutoff within a factor of two. Lean proves that, for the actual selected tails, making either normalized contribution eventually arbitrarily small is equivalent to making the other small.
 
 ## Kernel-checked conditional results
 
@@ -23,6 +25,8 @@ $\log U_n/n\to\log(10)/2$.
 Under those hypotheses, the [collection theorem](GoldiLochs/Basic.lean) makes the fixed target equivalent to the negative log mean along the actual finite Gauss orbits tending to $\pi^2/(12\log 2)$. [Tail](GoldiLochs/Tail.lean) proves this mean law is equivalent to $\tau_n/\log U_n\to12\log 2/\pi^2$.
 
 Lean also proves both logarithmic hypotheses from the explicit lower bound on the reduced-fraction error $\delta_n/Q_n\ge q_n^{-1-\epsilon}$, assumed eventually for each $\epsilon>0$. This isolates the remaining Ridout instance in the collection theorem.
+
+[Quotient bounds](GoldiLochs/QuotientBounds.lean) proves that every residual quotient is at most $Q_n^{1/4+\epsilon}$ eventually for every $\epsilon>0$. It takes the residual-height limit and two separation bounds as explicit hypotheses. The forward fourth-power separation is global, and the reverse fourth-power separation applies to center denominators at most $Q_n^{1/8}$. The two separation bounds use conventional Subspace Theorem arguments.
 
 ## Published inputs and scope
 
@@ -40,7 +44,9 @@ The comparison family in [Moving centers](MOVING_CENTERS.md) satisfies the stren
 ```math
 \left|\frac{\tau_n}{\log U_n}-\frac{12\log 2}{\pi^2}\right|<\epsilon.
 ```
-[Dynamics](DYNAMICS.md) gives an equivalent bounded-observable problem on each exact geodesic segment. The conventional reverse-center argument also excludes exponential proximity to each fixed algebraic center after reversal. With the height scale, the actual last quotient is therefore subexponential and fixed periodic terminal blocks have sublinear length. A comparison family with weak Gauss convergence and both endpoint exclusions still has a normalized depth equal to half the candidate rate, due to one large interior quotient. A discrete Gauss-map proof needs control over the contribution from small ratios reached inside the trajectory.
+[Dynamics](DYNAMICS.md) gives an equivalent bounded-observable problem on each exact geodesic segment. The conventional reverse-center argument also excludes exponential proximity to each fixed algebraic center after reversal. With the height scale, the actual last quotient is therefore subexponential and fixed periodic terminal blocks have sublinear length. A comparison family with weak Gauss convergence and both endpoint exclusions has normalized depth tending to half the candidate rate, due to one large interior quotient. A discrete Gauss-map proof needs control over the contribution from small ratios reached inside the trajectory.
+
+[Reverse moving centers](REVERSE_MOVING.md) strengthens the reverse estimate to moving rational centers. The proof gives the local fourth-power bound used by Lean's quarter-exponent estimate, and makes every fixed final quotient subexponential under the height scale. The [palindromic comparison](DYNAMICS.md#subexponential-digits-can-carry-a-positive-fraction-of-the-cost) meets stronger bounds in both directions and has weak Gauss statistics with a subexponential maximum digit. A sparse group of middle digits still changes its normalized depth. Even with weak Gauss convergence, a proof for the selected tails needs a uniform estimate on the sum of logarithms above a growing cutoff.
 
 The six-lift description gives an arithmetic formulation. To use it for the limit requires information about the Euclidean trajectories after choosing the lift of $-F_{k_n+1}10^n\bmod F_{k_n}$ selected by the decimal truncation. The congruence and lift bound leave open how often that trajectory has an atypical normalized length.
 
