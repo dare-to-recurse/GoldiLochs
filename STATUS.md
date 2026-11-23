@@ -11,6 +11,7 @@
 - [Scale](GoldiLochs/Scale.lean) gives explicit uniform additive error bounds for $2\log u_n-\log Q_n-\log\delta_n$ and $k_n\log\phi+\log u_n-\log Q_n$.
 - [Gauss](GoldiLochs/Gauss.lean) identifies the finite Euclidean remainder ratios with actual iterates of the Gauss map starting at $V_n/U_n$. The sum of their negative logarithms through the last positive remainder is $\log U_n$.
 - [Exceptional](GoldiLochs/Exceptional.lean) proves that the original truncations' normalized length after removing the integer part is eventually above $12\log(2)/\pi^2$ by a fixed positive margin.
+- [Arithmetic](GoldiLochs/Arithmetic.lean) proves that the reduced denominator $q_n$ divides $Q_n$ and satisfies $3q_n^2>Q_n$, so $q_n\to\infty$. Fibonacci reconstruction and Cassini's identity give $F_{k_n}A_n=v_n+F_{k_n+1}Q_n$. The phase bounds imply $0<v_n<6F_{k_n}$, so $v_n$ is among at most six lifts of one residue class.
 
 ## Kernel-checked conditional results
 
@@ -18,6 +19,8 @@ Under the two explicit hypotheses $-\log\delta_n/n\to0$ and $\log d_n/n\to0$, Le
 $k_n/n\to\log(10)/(2\log\phi)$ and
 $\log U_n/n\to\log(10)/2$.
 Under those hypotheses, the [collection theorem](GoldiLochs/Basic.lean) makes the fixed target equivalent to the negative log mean along the actual finite Gauss orbits tending to $\pi^2/(12\log 2)$. [Tail](GoldiLochs/Tail.lean) proves this mean law is equivalent to $\tau_n/\log U_n\to12\log 2/\pi^2$.
+
+Lean also proves both logarithmic hypotheses from the explicit lower bound on the reduced-fraction error $\delta_n/Q_n\ge q_n^{-1-\epsilon}$, assumed eventually for each $\epsilon>0$. This isolates the remaining Ridout instance in the collection theorem.
 
 ## Published inputs and scope
 
@@ -36,6 +39,8 @@ The explicit comparison family in [RESEARCH.md](RESEARCH.md) satisfies the same 
 \left|\frac{\tau_n}{\log U_n}-\frac{12\log 2}{\pi^2}\right|<\epsilon.
 ```
 A Gauss-map approach would need control over the full finite orbit at the logarithmic height scale, including the contribution from small ratios at indices whose preceding convergent denominators already have exponential size.
+
+The six-lift description gives an arithmetic formulation. To use it for the limit requires information about the Euclidean trajectories after choosing the lift of $-F_{k_n+1}10^n\bmod F_{k_n}$ selected by the decimal truncation. The congruence and lift bound leave open how often that trajectory has an atypical normalized length.
 
 A refutation by isolated large quotients would require an infinite subsequence and a proved net effect on the normalized depth. The fixed-index argument excludes an exponential quotient there. At the last quotient, an exceptionally small penultimate denominator $q'$ would give $p q'\equiv\pm1\bmod q$, where $p/q$ is the reduced truncation. This implies $\gcd(q',q)=1$ and supplies no $\{2,5\}$-smooth denominator for another application of Ridout. The congruence alone has yielded neither an infinite exceptional subsequence nor an aggregate error bound.
 
@@ -60,4 +65,6 @@ lake env lean scripts/audit.lean
 lake env leanchecker --verbose GoldiLochs
 ```
 
-The build passed without Lean compiler diagnostics. The standalone audit checks an independently spelled version of the fixed proposition, prints its fully elaborated definition and the complete conditional theorem type, and reports transitive dependencies for the results above. Their dependencies are contained in `propext`, `Classical.choice`, and `Quot.sound`. The bundled `leanchecker` replayed all project modules using Lean's kernel. The locally installed `lean4lean` binary rejected the project's object-file format as incompatible. An independent kernel check remains pending.
+The build passed without Lean compiler diagnostics. The standalone audit checks an independently spelled version of the fixed proposition, prints its fully elaborated definition and the complete conditional theorem type, and reports transitive dependencies for the results above. Their dependencies are contained in `propext`, `Classical.choice`, and `Quot.sound`. The bundled `leanchecker` replayed the project modules using Lean's kernel.
+
+Nanoda 0.4.31 type-checked the exports of `target_iff_tailMeanLaw_of_log_scales`, `original_length_eventually_exceptional`, and `residualPhase_eq` and their dependencies with the same three axioms permitted. It reported no type-checking errors and one separate pretty-printing error for axioms. The locally installed `lean4lean` binary rejected the object-file format as incompatible.
