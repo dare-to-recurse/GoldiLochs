@@ -5,6 +5,7 @@ Authors: Daniel Karlsson
 -/
 module
 
+public import GoldiLochs.Arithmetic
 public import GoldiLochs.Exceptional
 public import GoldiLochs.Gauss
 public import GoldiLochs.Phase
@@ -28,5 +29,14 @@ theorem target_iff_tailMeanLaw_of_log_scales
     Target ↔ TailMeanLaw :=
   (target_iff_tailLaw_of_scales (prefix_scale hdelta) (residual_height_scale hdelta hgcd)).trans
     tailLaw_iff_tailMeanLaw
+
+/-- The same equivalence, assuming the lower bound on approximation by the original
+reduced decimal fractions supplied by a number-theoretic argument. -/
+theorem target_iff_tailMeanLaw_of_approximation_bound
+    (happrox : ∀ e : ℝ, 0 < e → ∀ᶠ n : ℕ in atTop,
+      (reducedDenominator n : ℝ) ^ (-1 - e) ≤ delta n / (decimalDenominator n : ℝ)) :
+    Target ↔ TailMeanLaw :=
+  let ⟨hdelta, hgcd⟩ := logarithmic_scales_of_approximation_bound happrox
+  target_iff_tailMeanLaw_of_log_scales hdelta hgcd
 
 end GoldiLochs

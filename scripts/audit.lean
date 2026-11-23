@@ -20,6 +20,8 @@ set_option pp.all true in
 #print GoldiLochs.Target
 set_option pp.all true in
 #print GoldiLochs.target_iff_tailMeanLaw_of_log_scales
+set_option pp.all true in
+#print GoldiLochs.target_iff_tailMeanLaw_of_approximation_bound
 
 #print axioms GoldiLochs.Target
 #print axioms GoldiLochs.euclidDepth_zero
@@ -42,6 +44,14 @@ set_option pp.all true in
 #print axioms GoldiLochs.depth_eq_prefix_add_tail
 #print axioms GoldiLochs.decimalSplit_odd
 #print axioms GoldiLochs.decimalSplit_form
+#print axioms GoldiLochs.reducedDenominator_dvd
+#print axioms GoldiLochs.reducedDenominator_sq_bound
+#print axioms GoldiLochs.reducedDenominator_tendsto
+#print axioms GoldiLochs.logarithmic_scales_of_approximation_bound
+#print axioms GoldiLochs.stripOnes_fib_denominator
+#print axioms GoldiLochs.decimalSplit_v_linear
+#print axioms GoldiLochs.decimalSplit_v_congruence
+#print axioms GoldiLochs.decimalSplit_v_lt_six_fib
 #print axioms GoldiLochs.residualPhase_eq
 #print axioms GoldiLochs.residualPhase_bounds
 #print axioms GoldiLochs.split_height_log_bounds
@@ -55,3 +65,4 @@ set_option pp.all true in
 #print axioms GoldiLochs.target_iff_tailLaw_of_scales
 #print axioms GoldiLochs.tailLaw_iff_tailMeanLaw
 #print axioms GoldiLochs.target_iff_tailMeanLaw_of_log_scales
+#print axioms GoldiLochs.target_iff_tailMeanLaw_of_approximation_bound
