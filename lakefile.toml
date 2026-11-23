@@ -8,6 +8,7 @@ defaultTargets = ["GoldiLochs"]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 relaxedAutoImplicit = false
 weak.linter.mathlibStandardSet = true
+weak.linter.style.header.license = "Released under the MIT license as described in the file LICENSE."
 maxSynthPendingDepth = 3
 
 [[require]]
