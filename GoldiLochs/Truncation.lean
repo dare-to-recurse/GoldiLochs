@@ -87,4 +87,34 @@ theorem truncationNumerator_eq_exact (n : ℕ) :
   unfold phi
   constructor <;> nlinarith
 
+private theorem cast_denominator_succ (n : ℕ) :
+    (decimalDenominator (n + 1) : ℝ) = 10 * (decimalDenominator n : ℝ) := by
+  simp [decimalDenominator, pow_succ, mul_comm]
+
+/-- The next decimal digit. -/
+noncomputable def nextDigit (n : ℕ) : ℕ := Nat.floor (10 * delta n)
+
+theorem nextDigit_lt_ten (n : ℕ) : nextDigit n < 10 := by
+  apply (Nat.floor_lt (show 0 ≤ 10 * delta n by linarith [delta_pos n])).2
+  norm_num
+  linarith [delta_lt_one n]
+
+theorem truncationNumerator_succ (n : ℕ) :
+    truncationNumerator (n + 1) = 10 * truncationNumerator n + nextDigit n := by
+  have heq : phi * (decimalDenominator (n + 1) : ℝ) =
+      10 * delta n + ((10 * truncationNumerator n : ℕ) : ℝ) := by
+    rw [cast_denominator_succ, Nat.cast_mul, Nat.cast_ofNat]
+    unfold delta
+    ring
+  change Nat.floor (phi * (decimalDenominator (n + 1) : ℝ)) =
+    10 * truncationNumerator n + nextDigit n
+  rw [heq, Nat.floor_add_natCast (mul_nonneg (by norm_num) (delta_pos n).le), add_comm]
+  rfl
+
+theorem delta_succ (n : ℕ) :
+    delta (n + 1) = 10 * delta n - (nextDigit n : ℝ) := by
+  unfold delta
+  rw [cast_denominator_succ, truncationNumerator_succ, Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat]
+  ring
+
 end GoldiLochs
