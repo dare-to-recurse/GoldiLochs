@@ -7,10 +7,12 @@ module
 
 public import GoldiLochs.Arithmetic
 public import GoldiLochs.Backward
+public import GoldiLochs.Continuants
 public import GoldiLochs.Exceptional
 public import GoldiLochs.Gauss
 public import GoldiLochs.Phase
 public import GoldiLochs.Potential
+public import GoldiLochs.QuotientBounds
 public import GoldiLochs.Scale
 public import GoldiLochs.Tail
 
